@@ -21,8 +21,9 @@ def pede_um_chute
   chute = gets.strip
 end
 
-def ganhou pontos
+def ganhou pontos, palavra_secreta
   puts "PARABÉNS! Você ganhou!"
+  puts "A palavra secreta era #{palavra_secreta}"
   puts "Você terminou com #{pontos} pontos."
 end
 
@@ -58,4 +59,13 @@ def mostra_forca chutes, palavra
   end
 
   puts "\n\n"
+end
+
+def avisa_pontos_totais pontos_totais
+  puts "Seu total de pontos foi #{pontos_totais}"
+
+end
+
+def mostra_campeao dados
+  puts "O atual campeão é o #{dados[0]} com #{dados[1]} pontos."
 end

@@ -1,4 +1,5 @@
 require_relative "ui"
+require_relative "rank"
 
 def palavra_mascarada chutes, palavra
   mascara = ""
@@ -13,7 +14,12 @@ def palavra_mascarada chutes, palavra
 end
 
 def escolhe_palavra_secreta
-  palavra_secreta = "teste"
+  texto = File.read "dicionario.txt"
+  palavras = texto.split "\n"
+  
+  index = rand(palavras.size)
+
+  palavra_secreta = palavras[index].upcase
   avisa_tamanho_palavra_secreta palavra_secreta.size
   palavra_secreta
 end
@@ -35,7 +41,9 @@ def pede_um_chute_valido chutes, erros, palavra_secreta, mascara
   cabecalho_de_tentativas erros, chutes, mascara
 
   loop do
-    chute = pede_um_chute 
+    chute_do_usuario = pede_um_chute
+    chute = chute_do_usuario.upcase
+
     if chutes.include? chute
       avisa_chute_efetuado chute
     else
@@ -44,10 +52,18 @@ def pede_um_chute_valido chutes, erros, palavra_secreta, mascara
   end
 end
 
+def ja_ganhou? chutes, palavra_secreta
+  mascara = palavra_mascarada chutes, palavra_secreta
+  mascara == palavra_secreta
+end
+
 def jogar nome
   palavra_secreta = escolhe_palavra_secreta
   erros = 0
   chutes = []
+  pontos_por_palavra_acertada = 100
+  pontos_por_letra_acertada = 10
+  pontos_por_letra_errada = 30
   pontos = 0
   vidas = 5
 
@@ -64,27 +80,43 @@ def jogar nome
         tente_novamente
         erros += 1
       else
+        pontos += pontos_por_letra_acertada
         avisa_letra_encontrada total_encontrado
       end
     else
       if chute == palavra_secreta
-        pontos+= 100
-        ganhou pontos
-        break
+        pontos+= pontos_por_palavra_acertada
+        ganhou pontos, palavra_secreta
+        return pontos
       end
 
       tente_novamente
-      pontos-= 30
+      pontos-= pontos_por_letra_errada
       erros+= 1
     end
+
+    if ja_ganhou? chutes, palavra_secreta
+      ganhou pontos, palavra_secreta
+      return pontos
+    end
+
   end
 end
 
 def jogo_da_forca
   nome = da_boas_vindas
+  pontos_totais = 0
+
+  dados = le_rank
+  mostra_campeao dados
 
   loop do
-  jogar nome
-  break if quer_parar?
+    pontos_totais += jogar nome
+    
+    avisa_pontos_totais pontos_totais
+
+    salvar_rank nome, pontos_totais if pontos_totais > dados[1].to_i
+
+    break if quer_parar?
   end
 end
